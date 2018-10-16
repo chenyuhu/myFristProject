@@ -1,0 +1,123 @@
+****我的项目中的问题
+一、在vue中引入全局js文件
+  步骤一、
+    将js文件放在vue中的assets文件夹中
+  步骤二、
+    在.gitignore中添加一行代码：src/assets/js/mui.js
+  步骤三、
+    在babel.config.js中添加"ignore": 
+    [
+      "./src/assets/js/mui.js"
+    ]
+  步骤四、
+    在main.js中引入，
+    import mui from "@/assets/js/mui.js"
+    并
+    Vue.prototype.mui = mui，
+    声明一下
+二、父与子 和 子与父之间的通信
+  父与子之间的通信
+    子组件
+    <son :myname="zhansan"></son>
+    父组件
+     export default {
+      props:['myname'],
+      //使用
+      this.myname
+     }
+  子与父之间的通信
+    父组件
+    <son @myname="revmsg"></son>
+    export default {
+      methods:{
+        revmsg(msg){
+          //函数
+        }
+      }
+    }
+    子组件
+    export default {
+      methods:{
+        fun(msg){
+        // msg 传递的参数
+          this.$emit('myname',msg)
+        }
+      }
+    }  
+三、兄弟间的通信
+  步骤一、
+    创建Bus.js文件
+    <script>
+      import Vue from  "vue";
+      let Bus = new Vue;
+      export  default Bus;
+    </script>
+  步骤二、
+    发送方：
+      引入Bus.js文件，发送消息
+      import Bus from "@/assets/bus/Bus"
+      Bus.$emit('msg',123)
+    接收方：
+      引入Bus.js文件，发送消息
+      import Bus from "@/assets/bus/Bus"
+      Bus.$on('msg',(msg)=>{})
+四、客户端发送文件到服务器端(图片)
+  服务器端：
+    // 引入所需的模块
+    const  multer = require("multer");
+    const  fs=require("fs");
+    // 指定文件保存的目录
+    let upload = multer({dest:"public/img/uPortrait/"});
+    // 保存数据
+    router.post("/portrait",upload.single("file"),(req,res)=>{
+    // 获得文件
+      let file= req.file;
+    // 获得文件的类型
+      let srcFile = file.originalname;
+      let len=srcFile.lastIndexOf(".");
+      let suffix=srcFile.slice(len);
+    // 随机的文件名
+      let newFileName=`public/img/uPortrait/${new Date().getTime()}${Math.floor(Math.random()*9999)}${suffix}`;
+    // 保存到文件目录中
+      fs.renameSync(file.path,newFileName);
+    // 获得传入的参数
+      let uid=req.body.uid;
+      let fileName=newFileName.slice(6);
+      let sql=`update users set uPortrait=? where uid=?`;
+    // 保存到数据库中
+      pool.query(sql,[fileName,uid],(err,result)=>{
+          if(err)throw err;
+          res.send({code:1,msg:fileName})
+      });
+    });
+  客户端：
+    // 引入所需的组件
+    import axios from "axios";
+    export default {
+      methods:{
+        changeAvatar(){
+          let formData = new FormData();
+          formData.append('file',this.$refs.upload.files[0]);
+          // 发送所需要传递的参数
+          formData.set("uid",this.uid);
+          axios({
+          // 以post方式发送请求
+            method:'post',
+          // 请求的地址
+            url:'http://localhost:3000/login/portrait',
+            anync:true,
+            contentType:false,
+            processData:false,
+            data:formData
+          }).then((res)=>{
+          if(res.data.code==1){
+            this.msg.uPortrait=res.data.msg;
+            Toast("修改成功");
+            }
+          })
+        },
+      }
+    }
+五、客户端与服务器端实现轮询连接
+  未解决...
+

@@ -7,7 +7,7 @@ router.get("/list",(req,res)=>{
     let arr=[];
     let arr1=[];
     let uid=req.query.uid;
-    let sql=`SElECT fid,f_id from friend where uid=?`;
+    let sql=`SELECT fid,f_id from friend where uid=?`;
     pool.query(sql,[uid],(err,result)=>{
         if(err) throw  err;
         if(result.length == 0){

@@ -129,4 +129,18 @@ router.get("/cEmail",(req,res)=>{
         res.send({code:1});
     })
 });
+// 获取用户的未读的消息
+router.get("/chat",(req,res)=>{
+    let uid = req.query.uid;
+    let sql = 'select count(m_status) as num from messages where m_toUserID=? and m_status=0';
+    pool.query(sql,[uid],(err,result)=>{
+        if(err) throw err;
+        if(result.length != 0){
+            res.send({code:1,msg:result});
+        }else{
+            res.send({code:0})
+        }
+
+    })
+});
 module.exports=router;
